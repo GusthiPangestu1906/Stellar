@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&display=swap');
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+        #sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto; /* Add this for scrolling content */
+        }
+        /* Pseudo element to apply blur effect */
+        #sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/images/playlist-background.jpg'); /* Your background image */
+            background-size: cover;
+            filter: blur(1.5px); /* Adjust the blur amount as needed */
+            z-index: -1; /* Push the pseudo element behind the content */
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #1e1e1e00;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #sidebar h2 {
+            font-family: 'arvo', serif;
+            letter-spacing: 2.0px; /* Adjust letter spacing here */
+            margin-top: 45px; /* Ensure there is space between toggle button and heading */
+            text-align: left;
+            font-weight: normal;
+            text-transform: uppercase;
+            cursor: pointer;            
+            border-radius: 5px;
+        }
+        #playlist {
+            margin-top: 0px;
+            text-align: left;
+        }
+        #playlist-toggle {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 5px; /* Add some space between the toggle and playlist items */
+        }
+        #playlist-toggle:hover {
+            background-color: #ffffff52;
+        }
+        .playlist-item {
+            font-family: 'Arvo', serif;
+            cursor: pointer;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .playlist-item:hover {
+            background-color: #ffffff52;
+        }
+        
+        .playlist-item.active {
+            background-color: #54f4ffa9;
+            color: #fff;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            position: relative; /* Tambahkan ini untuk memastikan pseudo-element di dalam elemen */
+            overflow: hidden; /* Untuk memastikan pseudo-element tidak keluar dari batas elemen */
+        }
+        .main-content.sidebar-open {
+            margin-left: 250px; /* Adjust for sidebar width */
+        }
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/images/background.jpg'); /* Ganti dengan path gambar Anda */
+            background-size: cover;
+            background-position: center;
+            filter: blur(4px); /* Sesuaikan jumlah blur sesuai kebutuhan Anda */
+            z-index: -1; /* Pastikan pseudo-element berada di belakang konten */
+        }
+        #album-cover {
+            width: 300px;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }.search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            padding: 10px;
+            width: calc(100% - 80px);
+            border-radius: 5px;
+            border: none;
+        }
+        .search-bar button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            background-color: #1DB954;
+            color: white;
+        }
+        #search-results {
+            margin-top: 20px;
+        }
+        .search-result-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+        #song-info {
+            text-align: center;
+            margin-top: 10px;
+        }
+        #song-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #artist-name {
+            font-size: 18px;
+            color: #ffffff;
+        }
+        #lyrics {
+            font-family: 'Arvo', serif;
+            font-size: 24px;
+            text-align: center;
+            margin-top: 20px;
+            text-transform: uppercase;
+            white-space: pre-wrap;
+            letter-spacing: 1.5px; /* Adjust letter spacing here */
+        }
+        #controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 300px;
+            margin-top: 20px;
+        }
+        .control-button {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+        }
+        .control-button:hover {
+            color: #54f4ff;
+        }
+        .control-button.active {
+        color: #54f4ff;
+        }
+        #progress-container {
+            width: 80%;
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #progress {
+            width: 100%;
+            height: 5px;
+            background-color: #ffffffdf;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #progress-filled {
+            width: 0;
+            height: 100%;
+            background-color: #54f4ff;
+            border-radius: 5px;
+        }
+        #current-time, #duration {
+            font-size: 14px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <button id="sidebar-toggle"><i class="fas fa-bars"></i></button>
+    <div id="sidebar">
+        <h2 id="playlist-toggle" class="sidebar-item">Playlist</h2>
+        <div id="playlist" style="display: none;">
+            <div class="playlist-item" data-src="/static/music/music1.mp3" data-album-cover="/static/images/album1.jpg" data-title="Beautiful in White" data-artist="Westlife">Beautiful in White</div>
+            <div class="playlist-item" data-src="/static/music/music2.mp3" data-album-cover="/static/images/album2.jpg" data-title="All of Me" data-artist="John Legend">All of Me</div>
+            <div class="playlist-item" data-src="/static/music/music3.mp3" data-album-cover="/static/images/album3.jpg" data-title="Pray" data-artist="Klang">Pray</div>
+            <div class="playlist-item" data-src="/static/music/music4.mp3" data-album-cover="/static/images/album4.jpg" data-title="Here's Your Perfect" data-artist="Jamie Miller">Here's Your Perfect</div>
+            <div class="playlist-item" data-src="/static/music/music5.mp3" data-album-cover="/static/images/album5.jpg" data-title="The Night We Met" data-artist=" Lord Huron">The Night We Met</div>
+        </div>
+    </div>
+    <div class="main-content" id="main-content">
+        <div id="album-cover"></div>
+        <div id="song-info">
+            <div id="song-title">Song Title</div>
+            <div id="artist-name">Artist Name</div>
+        </div>
+        <div id="controls">
+            <i class="fas fa-random control-button" id="shuffle"></i> <!-- Shuffle Button -->
+            <i class="fas fa-step-backward control-button" id="prev"></i> <!-- Tombol Sebelumnya -->
+            <i class="fas fa-play control-button" id="play"></i>
+            <i class="fas fa-redo control-button" id="repeat" style="display: none;"></i> <!-- Repeat Button -->
+            <i class="fas fa-step-forward control-button" id="next"></i> <!-- Tombol Selanjutnya -->
+            <i class="fas fa-sync control-button" id="repeat-mode"></i> <!-- Repeat Mode Button -->
+        </div>
+               
+        <div id="progress-container">
+            <span id="current-time">0:00</span>
+            <div id="progress">
+                <div id="progress-filled"></div>
+            </div>
+            <span id="duration">0:00</span>
+        </div>
+        <div id="lyrics"></div>
+    </div>
+
+    <audio id="audio">
+        <source src="" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
